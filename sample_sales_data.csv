@@ -1,0 +1,13 @@
+region,product,total_orders,revenue,order_date
+North America,Laptop,245,245000,2024-01-15
+Europe,Laptop,189,189000,2024-01-16
+Asia Pacific,Laptop,156,156000,2024-01-17
+North America,Phone,412,206000,2024-01-18
+Europe,Phone,298,149000,2024-01-19
+Asia Pacific,Phone,267,133500,2024-01-20
+Latin America,Laptop,89,89000,2024-01-21
+Latin America,Phone,134,67000,2024-01-22
+North America,Tablet,178,89000,2024-01-23
+Europe,Tablet,145,72500,2024-01-24
+Asia Pacific,Tablet,123,61500,2024-01-25
+Latin America,Tablet,67,33500,2024-01-26
