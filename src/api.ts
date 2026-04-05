@@ -134,9 +134,13 @@ class ApiClient {
     })
   }
 
-  async getMemory(userId: string = 'default_user', tenantId: string = 'default_tenant'): Promise<MemoryResponse> {
+  async getMemory(userId: string = 'default_user', tenantId: string = 'default_tenant', token?: string): Promise<MemoryResponse> {
     const params = new URLSearchParams({ user_id: userId, tenant_id: tenantId });
-    return this.request<MemoryResponse>(`/memory?${params}`);
+    const headers: HeadersInit = {}
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+    return this.request<MemoryResponse>(`/memory?${params}`, { headers });
   }
 
   async healthCheck(): Promise<{ status: string; services: Record<string, boolean> }> {

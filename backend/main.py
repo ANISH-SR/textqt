@@ -266,16 +266,26 @@ async def chat(request: ChatRequest, current_user: dict = Depends(get_current_us
                         "user_assistant_pairs": [{
                             "user": request.message,
                             "assistant": response_text
-                        }],
-                        "infer": True,
-                        "user_name": current_user["username"]
-                    }],
-                    "tenant_id": current_user["user_id"],
-                    "sub_tenant_id": current_user["user_id"],
-                    "upsert": True
-                })
+                        }]
+                    }]
+                }, tenant_id=current_user["user_id"], sub_tenant_id=current_user["user_id"])
             except Exception as e:
-                print(f"HydraDB store failed: {e}")
+                print(f"Failed to store in HydraDB: {e}")
+
+        # Also store in our simple memory storage
+        user_id = current_user["user_id"]
+        if user_id not in user_memories:
+            user_memories[user_id] = []
+
+        user_memories[user_id].append({
+            "memories": [{
+                "user_assistant_pairs": [{
+                    "user": request.message,
+                    "assistant": response_text
+                }]
+            }]
+        })
+
         
         return ChatResponse(
             response=response_text,
@@ -434,22 +444,31 @@ def format_for_chart(results: List[Dict]):
     
     return None
 
+# Simple in-memory storage for demonstration (in production, use proper database)
+user_memories = {}  # {user_id: [memories]}
+
 @app.get("/memory", response_model=MemoryResponse)
 async def get_memory(current_user: dict = Depends(get_current_user)):
     """Get stored memories for a user"""
     try:
-        if not hydra_db:
-            raise HTTPException(status_code=503, detail="HydraDB not available")
+        user_id = current_user["user_id"]
         
-        # List all data for the user
-        data_response = await hydra_db.data.list(
-            tenant_id=current_user["user_id"],
-            sub_tenant_id=current_user["user_id"]
-        )
+        # Get memories from our simple storage
+        memories = user_memories.get(user_id, [])
         
-        memories = []
-        if data_response and 'data' in data_response:
-            memories = data_response['data']
+        # Also try HydraDB recall as backup
+        if not memories and hydra_db:
+            try:
+                recall_response = await hydra_db.recall.recall_preferences(
+                    query="recent conversations",
+                    tenant_id=user_id,
+                    sub_tenant_id=user_id
+                )
+                
+                if recall_response and 'memories' in recall_response:
+                    memories = recall_response['memories']
+            except Exception as recall_error:
+                print(f"Recall method failed: {recall_error}")
         
         return MemoryResponse(
             memories=memories,
@@ -457,7 +476,11 @@ async def get_memory(current_user: dict = Depends(get_current_user)):
         )
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to retrieve memories: {str(e)}")
+        print(f"Error retrieving memories: {e}")
+        return MemoryResponse(
+            memories=[],
+            total_count=0
+        )
 
 @app.get("/tables")
 async def get_tables(current_user: dict = Depends(get_current_user)):

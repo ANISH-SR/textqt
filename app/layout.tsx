@@ -8,7 +8,7 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'HydraDB — Talk to Your Data, It Remembers',
+  title: 'TextQt - AI-Powered Data Analysis',
   description: 'The AI-powered data analytics platform that learns your business language, remembers your queries, and delivers insights before you ask.',
   generator: 'v0.app',
   icons: {

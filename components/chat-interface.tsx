@@ -41,6 +41,7 @@ export function ChatInterface() {
   const [activeTab, setActiveTab] = useState<"chat" | "sql" | "result" | "memory" | "upload">("chat")
   const [uploadedFile, setUploadedFile] = useState<UploadResponse | null>(null)
   const [tables, setTables] = useState<Record<string, any[]>>({})
+  const [memories, setMemories] = useState<any[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -51,8 +52,20 @@ export function ChatInterface() {
   useEffect(() => {
     if (isSignedIn) {
       loadTables()
+      loadMemories()
     }
   }, [isSignedIn])
+
+  const loadMemories = async () => {
+    try {
+      const token = await getToken()
+      if (!token) return
+      const memoriesData = await api.getMemory('current_user', 'current_user', token)
+      setMemories(memoriesData.memories || [])
+    } catch (error) {
+      console.error("Failed to load memories:", error)
+    }
+  }
 
   const loadTables = async () => {
     try {
@@ -92,6 +105,8 @@ export function ChatInterface() {
       }
 
       setMessages(prev => [...prev, assistantMessage])
+      // Refresh memories after chat
+      await loadMemories()
       setActiveTab("result")
     } catch (error) {
       const errorMessage: Message = {
@@ -421,7 +436,7 @@ export function ChatInterface() {
                             const percentage = (value / maxValue) * 100
                             
                             return (
-                              <div key={label} className="space-y-1">
+                              <div key={`${label}-${i}`} className="space-y-1">
                                 <div className="flex justify-between text-sm">
                                   <span className="text-muted-foreground">{label}</span>
                                   <span className="font-medium">{value.toLocaleString()}</span>
@@ -455,10 +470,32 @@ export function ChatInterface() {
                     <Brain className="h-4 w-4" />
                     What HydraDB knows about your data
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    Memory features will be displayed here as you interact with the system.
-                    HydraDB learns from your queries and preferences to provide better responses over time.
-                  </div>
+                  {memories.length > 0 ? (
+                    <div className="space-y-3">
+                      {memories.map((memory: any, index: number) => (
+                        <div key={index} className="p-3 border rounded-lg bg-muted/30">
+                          <div className="text-sm">
+                            {memory.memories?.map((mem: any, memIndex: number) => (
+                              <div key={memIndex} className="space-y-2">
+                                {mem.user_assistant_pairs?.map((pair: any, pairIndex: number) => (
+                                  <div key={pairIndex} className="space-y-1">
+                                    <div className="font-medium text-blue-600">You:</div>
+                                    <div className="text-sm pl-4">{pair.user}</div>
+                                    <div className="font-medium text-green-600">Assistant:</div>
+                                    <div className="text-sm pl-4">{pair.assistant}</div>
+                                  </div>
+                                ))}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground">
+                      No memories stored yet. Start chatting with your data to build up HydraDB's knowledge!
+                    </div>
+                  )}
                 </div>
               </div>
             </TabsContent>

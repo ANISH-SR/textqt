@@ -21,7 +21,7 @@ export function Header() {
           className="group flex items-center gap-2 transition-opacity hover:opacity-80"
         >
           <Database className="h-6 w-6 text-accent" />
-          <span className="text-lg font-bold tracking-tight">TextQL + Memory</span>
+          <div className="text-xl font-bold">TextQt</div>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">

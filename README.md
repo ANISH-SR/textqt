@@ -1,6 +1,4 @@
-# TextQL + Memory
-
-A complete data analytics interface that learns and adapts to your workflow using HydraDB for persistent memory and Clerk for secure authentication.
+# TextQt - AI-Powered Data Analysis Platformface that learns and adapts to your workflow using HydraDB for persistent memory and Clerk for secure authentication.
 
 ## 🚀 Features
 
