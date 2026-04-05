@@ -17,7 +17,7 @@ from datetime import datetime, timedelta
 # Load environment variables
 load_dotenv()
 
-app = FastAPI(title="TextQL + Memory API", version="1.0.0")
+app = FastAPI(title="TextQt API", version="1.0.0")
 
 # CORS middleware
 app.add_middleware(
